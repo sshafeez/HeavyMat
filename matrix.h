@@ -18,15 +18,26 @@ class Matrix{
         grid.resize(N, vector<T>(M,0));
     }
 
+    //individual element access
     T& at(int row, int col){
         return grid[row][col];
     }
     
-    Matrix* operator*(const Matrix<T> right){
+    //basic matmul as left matrix
+    Matrix* operator*(const Matrix<T>& right){
+        if(grid[0].size() != right.size().first) throw "inner dimension mismatch"
+        int rows = grid.size();
+        int cols = right.size().second;
+
+        for(int i=0; i< rows; ++i){
+            for(int j=0)
+        }
         Matrix* result = new Matrix();
+
         return result;
     }
     
+    //print contents
     void print(){
         for(int i=0; i<grid.size(); ++i){
             for(int j=0; j<grid[0].size(); ++j){
@@ -35,6 +46,8 @@ class Matrix{
             cout<<"\n";
         }
     }
+
+    //get size in <rows,columns>
     pair<int,int> size(){
         return pair<int,int>(grid.size(),grid[0].size());
     }
