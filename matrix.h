@@ -1,5 +1,6 @@
 #include <vector>
 #include <utility>
+#include <stdlib.h>
 #include <iostream>
 using namespace std;
 
@@ -8,14 +9,20 @@ class Matrix{
     private:
     vector<vector<T>> grid;
 
-
     public:
     //Create N rows of M columns
-    Matrix(int N, int M){
-        if(M==0 || N==0){
+    Matrix(int rows, int cols, bool initRandom=false){
+        if(rows==0 || cols==0){
             throw "Matrix cannot have 0 rows or columns";
         }
-        grid.resize(N, vector<T>(M,0));
+        grid.resize(rows, vector<T>(cols,0));
+        if(initRandom){
+            for(int i=0; i<rows; ++i){
+                for(int j=0; j<cols; ++j){
+                    grid[i][j] = rand() % 1000;
+                }
+            }
+        }
     }
 
     //individual element access
@@ -24,16 +31,24 @@ class Matrix{
     }
     
     //basic matmul as left matrix
-    Matrix* operator*(const Matrix<T>& right){
-        if(grid[0].size() != right.size().first) throw "inner dimension mismatch"
-        int rows = grid.size();
+    Matrix* operator*(Matrix<T>& right){
+        if(grid[0].size() != right.size().first) throw "inner dimension mismatch";
+
+        /// (mxn) * (pxq) = (mxq)
+        int rows = size().first;
+        int n = size().second;
         int cols = right.size().second;
+        Matrix* result = new Matrix(rows,cols);
 
-        for(int i=0; i< rows; ++i){
-            for(int j=0)
+        for(int i=0; i<rows; ++i){
+            for(int j=0; j<cols; ++j){
+                result->at(i,j) = 0;
+                for(int k=0; k<n; ++k){
+                    result->at(i,j) += at(i,k) * right.at(k,j);
+                }
+            }
         }
-        Matrix* result = new Matrix();
-
+        
         return result;
     }
     
