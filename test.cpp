@@ -9,7 +9,7 @@ int main(){
     cout<<endl;
     B.print();
     cout<<endl;
-    Matrix<int>* C = A*B;
+    Matrix<int>* C = multiply(A,B);
     C->print();
     return 0;
 
