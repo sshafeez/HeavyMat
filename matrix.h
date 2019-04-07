@@ -4,10 +4,9 @@
 #include <iostream>
 using namespace std;
 
-template <typename T>
 class Matrix{
     private:
-    vector<vector<T>> grid;
+    vector<vector<double>> grid;
 
     public:
     //Create N rows of M columns
@@ -15,7 +14,7 @@ class Matrix{
         if(rows==0 || cols==0){
             throw "Matrix cannot have 0 rows or columns";
         }
-        grid.resize(rows, vector<T>(cols,0));
+        grid.resize(rows, vector<double>(cols,0));
         if(initRandom){
             for(int i=0; i<rows; ++i){
                 for(int j=0; j<cols; ++j){
@@ -26,7 +25,7 @@ class Matrix{
     }
 
     //individual element access
-    T& at(int row, int col){
+    double& at(int row, int col){
         return grid[row][col];
     }
     
@@ -44,21 +43,21 @@ class Matrix{
     pair<int,int> size(){
         return pair<int,int>(grid.size(),grid[0].size());
     }
-    friend Matrix<T>* multiply(Matrix<T>& left, Matrix<T>& right);
+    friend Matrix* multiply(Matrix& left, Matrix& right);
 
 };
 
 
 //basic multiplication
-template <typename T>
-Matrix<T>* multiply(Matrix<T>& left, Matrix<T>& right){
+
+Matrix* multiply(Matrix& left, Matrix& right){
     if(left.size().second != right.size().first) throw "inner dimension mismatch";
 
     /// (mxn) * (pxq) = (mxq)
     int rows = left.size().first;
     int n = left.size().second;
     int cols = right.size().second;
-    Matrix<T>* result = new Matrix<T>(rows,cols);
+    Matrix* result = new Matrix(rows,cols);
 
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j){

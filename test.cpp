@@ -3,13 +3,13 @@
 using namespace std;
 
 int main(){
-    Matrix<int> A(4,5,true);
-    Matrix<int> B(5,4,true);
+    Matrix A(4,5,true);
+    Matrix B(5,4,true);
     A.print();
     cout<<endl;
     B.print();
     cout<<endl;
-    Matrix<int>* C = multiply(A,B);
+    Matrix* C = multiply(A,B);
     C->print();
     return 0;
 
