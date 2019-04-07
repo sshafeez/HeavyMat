@@ -2,6 +2,7 @@
 #include <utility>
 #include <stdlib.h>
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
 class Matrix{
@@ -33,7 +34,7 @@ class Matrix{
     void print(){
         for(int i=0; i<grid.size(); ++i){
             for(int j=0; j<grid[0].size(); ++j){
-                cout<<grid[i][j]<<" ";
+                cout<<std::setprecision(0)<<std::fixed<<grid[i][j]<<" ";
             }
             cout<<"\n";
         }
