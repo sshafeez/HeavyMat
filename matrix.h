@@ -76,13 +76,12 @@ matrix* multiply(matrix& left, matrix& right){
 }
 
 ///////////////////// MATRIX WITH LINEAR DEPENDENCIES CACHED //////////////////////////////
-
-class heavy_matrix : public matrix{
-    public:
-    struct dep{
+struct dep{
         int index;
         int scalar;
-    };
+};
+class heavy_matrix : public matrix{
+    public:
     unordered_map<int,vector<dep>> rowDeps;
     unordered_map<int,vector<dep>> colDeps;
 
@@ -92,7 +91,7 @@ class heavy_matrix : public matrix{
 heavy_matrix* multiply(heavy_matrix& left, heavy_matrix& right){
     if(left.size().second != right.size().first) throw "inner dimension mismatch";
 
-    /// (mxn) * (pxq) = (mxq)
+    /// (mxn) * (nxq) = (mxq)
     int rows = left.size().first;
     int n = left.size().second;
     int cols = right.size().second;
@@ -100,9 +99,22 @@ heavy_matrix* multiply(heavy_matrix& left, heavy_matrix& right){
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j){
             result->at(i,j) = 0;
-            for(int k=0; k<n; ++k){
-                result->at(i,j) += left.at(i,k) * right.at(k,j);
+            if(left.rowDeps.count(i)){
+                for(dep& comb : left.rowDeps[i] ){
+                    result->at(i,j) += comb.scalar * result->at(comb.index,j);
+                }
             }
+            else if(right.colDeps.count(j)){
+                for(dep& comb : right.colDeps[i] ){
+                    result->at(i,j) += comb.scalar * result->at(i,comb.index);
+                }
+            }
+            else{
+                for(int k=0; k<n; ++k){
+                    result->at(i,j) += left.at(i,k) * right.at(k,j);
+                }
+            }
+            
         }
     }
     
