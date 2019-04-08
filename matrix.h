@@ -3,15 +3,19 @@
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
+#include <unordered_map>
 using namespace std;
 
-class Matrix{
+
+///////////////////// NAIVE MATRIX //////////////////////////////
+
+class matrix{
     private:
     vector<vector<double>> grid;
 
     public:
     //Create N rows of M columns
-    Matrix(int rows, int cols, bool initRandom=false){
+    matrix(int rows, int cols, bool initRandom=false){
         if(rows==0 || cols==0){
             throw "Matrix cannot have 0 rows or columns";
         }
@@ -44,22 +48,55 @@ class Matrix{
     pair<int,int> size(){
         return pair<int,int>(grid.size(),grid[0].size());
     }
-    friend Matrix* multiply(Matrix& left, Matrix& right);
+    friend matrix* multiply(matrix& left, matrix& right);
 
 };
 
 
 //basic multiplication
 
-Matrix* multiply(Matrix& left, Matrix& right){
+matrix* multiply(matrix& left, matrix& right){
     if(left.size().second != right.size().first) throw "inner dimension mismatch";
 
     /// (mxn) * (pxq) = (mxq)
     int rows = left.size().first;
     int n = left.size().second;
     int cols = right.size().second;
-    Matrix* result = new Matrix(rows,cols);
+    matrix* result = new matrix(rows,cols);
+    for(int i=0; i<rows; ++i){
+        for(int j=0; j<cols; ++j){
+            result->at(i,j) = 0;
+            for(int k=0; k<n; ++k){
+                result->at(i,j) += left.at(i,k) * right.at(k,j);
+            }
+        }
+    }
+    
+    return result;
+}
 
+///////////////////// MATRIX WITH LINEAR DEPENDENCIES CACHED //////////////////////////////
+
+class heavy_matrix : public matrix{
+    public:
+    struct dep{
+        int index;
+        int scalar;
+    };
+    unordered_map<int,vector<dep>> rowDeps;
+    unordered_map<int,vector<dep>> colDeps;
+
+    heavy_matrix(int rows, int cols, bool initRandom = false): matrix(rows,cols,initRandom){}
+};
+
+heavy_matrix* multiply(heavy_matrix& left, heavy_matrix& right){
+    if(left.size().second != right.size().first) throw "inner dimension mismatch";
+
+    /// (mxn) * (pxq) = (mxq)
+    int rows = left.size().first;
+    int n = left.size().second;
+    int cols = right.size().second;
+    heavy_matrix* result = new heavy_matrix(rows,cols);
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j){
             result->at(i,j) = 0;
