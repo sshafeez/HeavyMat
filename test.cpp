@@ -3,14 +3,21 @@
 using namespace std;
 
 int main(){
-    matrix A(4,5,true);
-    matrix B(5,4,true);
+    heavy_matrix A(4,5,true);
     A.print();
-    cout<<endl;
+    A.rref();
+    A.print();
+
+    heavy_matrix B(5,5,true);
     B.print();
-    cout<<endl;
-    matrix* C = multiply(A,B);
-    C->print();
+    B.rref();
+    B.print();
+
+    heavy_matrix C(5,4,true);
+    C.print();
+    C.rref();
+    C.print();
+
     return 0;
 
 }
