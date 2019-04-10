@@ -14,7 +14,52 @@ class matrix{
     protected:
     vector<vector<double>> grid;
 	public:
+    //Create N rows of M columns
+    matrix(int rows, int cols, bool initRandom=false){
+        if(rows==0 || cols==0){
+            throw "Matrix cannot have 0 rows or columns";
+        }
+        grid.resize(rows, vector<double>(cols,0));
+        if(initRandom){
+            for(int i=0; i<rows; ++i){
+                for(int j=0; j<cols; ++j){
+                    grid[i][j] = rand() % 100;
+                }
+            }
+        }
+    }
 
+	matrix(matrix& mat) {
+		for (int i = 0; i < mat.size().first; ++i) {
+			for (int j = 0; j < mat.size().second; ++j) {
+				grid[i][j] = mat.at(i, j);
+			}
+		}
+	}
+
+    //individual element access
+    double& at(int row, int col){
+        return grid[row][col];
+    }
+    
+    //print contents
+    void print(){
+        for(int i=0; i<grid.size(); ++i){
+            for(int j=0; j<grid[0].size(); ++j){
+                cout<<grid[i][j]<<" ";
+                //cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
+            }
+            cout<<"\n";
+        }
+        cout<<endl;
+    }
+
+    //get size in <rows,columns>
+    pair<int,int> size(){
+        return pair<int,int>(grid.size(),grid[0].size());
+    }
+
+	//invert the matrix
 	void invert() {
 		if (size().first != size().second) throw "not invertible";
 		//initialize I matrix on the right
@@ -84,67 +129,42 @@ class matrix{
 
 	}
 
-    //Create N rows of M columns
-    matrix(int rows, int cols, bool initRandom=false){
-        if(rows==0 || cols==0){
-            throw "Matrix cannot have 0 rows or columns";
-        }
-        grid.resize(rows, vector<double>(cols,0));
-        if(initRandom){
-            for(int i=0; i<rows; ++i){
-                for(int j=0; j<cols; ++j){
-                    grid[i][j] = rand() % 100;
-                }
-            }
-        }
-    }
-
-    //individual element access
-    double& at(int row, int col){
-        return grid[row][col];
-    }
-    
-    //print contents
-    void print(){
-        for(int i=0; i<grid.size(); ++i){
-            for(int j=0; j<grid[0].size(); ++j){
-                cout<<grid[i][j]<<" ";
-                //cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
-            }
-            cout<<"\n";
-        }
-        cout<<endl;
-    }
-
-    //get size in <rows,columns>
-    pair<int,int> size(){
-        return pair<int,int>(grid.size(),grid[0].size());
-    }
-    friend matrix* multiply(matrix& left, matrix& right);
+	//transpose the matrix
+	void transpose() {
+		matrix transposed(size().first, size().second);
+		for (int i = 0; i < size().first; ++i) {
+			for (int j = 0; j < size().second; ++j) {
+				transposed.at(j, i) = grid[i][j];
+			}
+		}
+		for (int i = 0; i < size().first; ++i) {
+			for (int j = 0; j < size().second; ++j) {
+				grid[i][j] = transposed.at(i, j);
+			}
+		}
+	}
+    friend void multiply(matrix& left, matrix& right, matrix& dest);
 
 };
 
 
 //basic multiplication
 
-matrix* multiply(matrix& left, matrix& right){
+void multiply(matrix& left, matrix& right, matrix& dest){
     if(left.size().second != right.size().first) throw "inner dimension mismatch";
 
     /// (mxn) * (pxq) = (mxq)
     int rows = left.size().first;
     int n = left.size().second;
     int cols = right.size().second;
-    matrix* result = new matrix(rows,cols);
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j){
-            result->at(i,j) = 0;
+            dest.at(i,j) = 0;
             for(int k=0; k<n; ++k){
-                result->at(i,j) += left.at(i,k) * right.at(k,j);
+				dest.at(i,j) += left.at(i,k) * right.at(k,j);
             }
         }
     }
-    
-    return result;
 }
 
 
@@ -167,38 +187,35 @@ class heavy_matrix : public matrix{
         colDeps.clear(); 
     }
 
-    friend heavy_matrix* multiply(heavy_matrix& left, heavy_matrix& right);
+    friend void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest);
 };
 
-heavy_matrix* multiply(heavy_matrix& left, heavy_matrix& right){
+void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
     if(left.size().second != right.size().first) throw "inner dimension mismatch";
 
     /// (mxn) * (nxq) = (mxq)
     int rows = left.size().first;
     int n = left.size().second;
     int cols = right.size().second;
-    heavy_matrix* result = new heavy_matrix(rows,cols);
     for(int i=0; i<rows; ++i){
         for(int j=0; j<cols; ++j){
-            result->at(i,j) = 0;
+			dest.at(i,j) = 0;
             if(left.rowDeps.count(i)){
                 for(heavy_matrix::dep& comb : left.rowDeps[i]){
-                    result->at(i,j) += comb.scalar * result->at(comb.index,j);
+					dest.at(i,j) += comb.scalar * dest.at(comb.index,j);
                 }
             }
             else if(right.colDeps.count(j)){
                 for(heavy_matrix::dep& comb : right.colDeps[i]){
-                    result->at(i,j) += comb.scalar * result->at(i,comb.index);
+					dest.at(i,j) += comb.scalar * dest.at(i,comb.index);
                 }
             }
             else{
                 for(int k=0; k<n; ++k){
-                    result->at(i,j) += left.at(i,k) * right.at(k,j);
+					dest.at(i,j) += left.at(i,k) * right.at(k,j);
                 }
             }
             
         }
     }
-    
-    return result;
 }
