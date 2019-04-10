@@ -3,20 +3,15 @@
 using namespace std;
 
 int main(){
-    heavy_matrix A(4,5,true);
-    A.print();
-    A.rref();
-    A.print();
+    heavy_matrix A(3,3,true);
+    A.at(0,0) = 1; A.at(0,1) = 0; A.at(0,2) = 1;
+    A.at(1,0) = 1; A.at(1,1) = 1; A.at(1,2) = 0;
+    A.at(2,0) = 0; A.at(2,1) = 1; A.at(2,2) = 0;
 
-    heavy_matrix B(5,5,true);
-    B.print();
-    B.rref();
-    B.print();
+	A.invert();
 
-    heavy_matrix C(5,4,true);
-    C.print();
-    C.rref();
-    C.print();
+   
+    
 
     return 0;
 

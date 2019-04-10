@@ -13,8 +13,77 @@ using namespace std;
 class matrix{
     protected:
     vector<vector<double>> grid;
+	public:
 
-    public:
+	void invert() {
+		if (size().first != size().second) throw "not invertible";
+		//initialize I matrix on the right
+		vector<vector<double>> identity;
+		identity.resize(size().first, vector<double>(size().second, 0));
+		for (int i = 0; i < size().first; ++i) {
+			identity[i][i] = 1;
+		}
+		//start rref procedure
+		int lead = 0;
+		int rows = size().first;
+		int cols = size().second;
+
+		for (int r = 0; r < rows; ++r) {
+			//if (rows == 5 && cols == 5) print();
+			if (lead >= cols) return;
+			int i = r;
+			//find the next pivot
+			while (abs(grid[i][lead]) < 0.0001) {
+				++i;
+				if (i == rows) {
+					i = r;
+					++lead;
+					if (lead == cols) {
+						return;
+					}
+				}
+			}
+			//cout << "pivoting @ " << i << " " << lead << endl;
+
+			//swap row i and r to put leading nonzero up high
+			for (int k = 0; k < cols; ++k) {
+				double tmp = grid[i][k];
+				grid[i][k] = grid[r][k];
+				grid[r][k] = tmp;
+
+				//apply to I as well
+				tmp = identity[i][k];
+				identity[i][k] = identity[r][k];
+				identity[r][k] = tmp;
+			}
+
+			//divide it so that leading nonzero is leading 1
+			if (abs(grid[r][lead]) > 0.0001) {
+				double divisor = grid[r][lead];
+				for (int k = 0; k < cols; ++k) grid[r][k] /= divisor;
+				//apply to I as well
+				for (int k = 0; k < cols; ++k) identity[r][k] /= divisor;
+			}
+
+			for (i = 0; i < rows; ++i) {
+				if (i != r) {
+					double mlpr = grid[i][lead];
+					for (int k = 0; k < cols; ++k) {
+						grid[i][k] -= grid[r][k] * mlpr;
+					}
+					//apply to I as well
+					for (int k = 0; k < cols; ++k) {
+						identity[i][k] -= identity[r][k] * mlpr;
+					}
+				}
+			}
+			++lead;
+		}
+		grid = identity;
+		print();
+
+	}
+
     //Create N rows of M columns
     matrix(int rows, int cols, bool initRandom=false){
         if(rows==0 || cols==0){
@@ -39,10 +108,12 @@ class matrix{
     void print(){
         for(int i=0; i<grid.size(); ++i){
             for(int j=0; j<grid[0].size(); ++j){
-                cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
+                cout<<grid[i][j]<<" ";
+                //cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
             }
             cout<<"\n";
         }
+        cout<<endl;
     }
 
     //get size in <rows,columns>
@@ -89,41 +160,6 @@ class heavy_matrix : public matrix{
     unordered_map<int,vector<dep>> colDeps;
 
     public:
-    //////RREF CODE//////
-    
-    void rref(){
-        int lead = 0;
-        int rows = size().first;
-        int cols = size().second;
-
-        for(int r=0; r<rows; ++r){
-            if(lead >= cols) break;
-            int i = r;
-            while( abs(grid[i][lead]) < 0.0001){
-                ++i;
-                if(i == rows){
-                    i=r;
-                    ++lead;
-                    if(lead == cols){
-                        break;
-                    }
-                }
-            }
-            iter_swap(grid[i].begin(), grid[r].begin());
-            if(abs(grid[r][lead]) > 0.0001){
-                double divisor = grid[r][lead];
-                for(int k=0; k<cols; ++k) grid[r][k] /= divisor;
-            } 
-            //for_each(grid[r].begin(),grid[r].end(), [divisor](double& val){ val /= divisor;});
-            for(i=0; i<rows; ++i){
-                if(i != r){
-                    for(int k=0; k<cols; ++k) grid[i][k] -= grid[r][k] * grid[i][lead];
-                }
-            }
-            ++lead;
-        }
-
-    }
     
     heavy_matrix(int rows, int cols, bool initRandom = false): matrix(rows,cols,initRandom){}
     void cache(){
