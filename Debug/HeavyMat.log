@@ -1,4 +1,0 @@
-﻿  test.cpp
-c:\umich\math214\heavymat\matrix.h(47): warning C4018: '<': signed/unsigned mismatch
-c:\umich\math214\heavymat\matrix.h(48): warning C4018: '<': signed/unsigned mismatch
-  HeavyMat.vcxproj -> C:\UMICH\math214\HeavyMat\Debug\HeavyMat.exe

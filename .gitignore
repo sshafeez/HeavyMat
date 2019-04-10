@@ -1,3 +1,9 @@
 .vscode/
 *.o
 *.out
+.vs/
+Debug/
+*.sln
+*.vcxproj
+*.filters
+*.user
