@@ -7,6 +7,8 @@
 #include <algorithm>
 using namespace std;
 
+#define epsilon 0.000001
+
 
 ///////////////////// NAIVE MATRIX //////////////////////////////
 
@@ -20,7 +22,7 @@ class matrix{
         if(initRandom){
             for(int i=0; i<rows; ++i){
                 for(int j=0; j<cols; ++j){
-                    grid[i][j] = rand() % 100;
+                    grid[i][j] = rand() % 1000;
                 }
             }
         }
@@ -82,7 +84,7 @@ class matrix{
 			if (lead >= cols) return;
 			int i = r;
 			//find the next pivot
-			while (abs(grid[i][lead]) < 0.0001) {
+			while (abs(grid[i][lead]) < epsilon) {
 				++i;
 				if (i == rows) {
 					i = r;
@@ -107,7 +109,7 @@ class matrix{
 			}
 
 			//divide it so that leading nonzero is leading 1
-			if (abs(grid[r][lead]) > 0.0001) {
+			if (abs(grid[r][lead]) > epsilon) {
 				double divisor = grid[r][lead];
 				for (int k = 0; k < cols; ++k) grid[r][k] /= divisor;
 				//apply to I as well
@@ -184,54 +186,57 @@ class heavy_matrix : public matrix{
     heavy_matrix(int rows, int cols, bool initRandom = false): matrix(rows,cols,initRandom){}
 
 	//find linear dependencies
-    void cache(double error=0){
+    void cache(double error=epsilon){
         rowDeps.clear(); 
         colDeps.clear(); 
 
-		//get row deps
-		matrix A(0, 0); //holds basis
-		vector<int> rowsInBasis = {0};
-		A.append(grid[0]);
-		for(int i=1; i < size().first; ++i){
-			cout << "A: \n"; A.print();
-			//compute least squares B vector
-			matrix b(0,0); b.append(grid[i]);
-			cout << "b: \n"; b.print();
-			matrix At = A; At.transpose();
-			cout << "At: \n"; At.print();
-			matrix AtA(0,0); multiply(At,A,AtA);
-			cout << "AtA: \n"; AtA.print();
-			AtA.invert();
-			cout << "AtA inverted: \n"; AtA.print();
-			matrix AtAAt(0,0); multiply(AtA,At,AtAAt);
-			cout << "AtAAt : \n"; AtAAt.print();
-			matrix AtAAtb(0,0); multiply(AtAAt,b,AtAAtb);
-			cout << "AtAAtb : \n"; AtAAtb.print();
+		for (int iter = 0; iter < 2; ++iter) {
+			//get row deps
+			matrix A(0, 0); //holds basis
+			vector<int> rowsInBasis = { 0 };
+			A.append(grid[0]);
+			for (int i = 1; i < size().first; ++i) {
+				//cout << "A: \n"; A.print();
+				//compute least squares B vector
+				matrix b(0, 0); b.append(grid[i]);
+				//cout << "b: \n"; b.print();
+				matrix At = A; At.transpose();
+				//cout << "At: \n"; At.print();
+				matrix AtA(0, 0); multiply(At, A, AtA);
+				//cout << "AtA: \n"; AtA.print();
+				AtA.invert();
+				//cout << "AtA inverted: \n"; AtA.print();
+				matrix AtAAt(0, 0); multiply(AtA, At, AtAAt);
+				//cout << "AtAAt : \n"; AtAAt.print();
+				matrix AtAAtb(0, 0); multiply(AtAAt, b, AtAAtb);
+				//cout << "AtAAtb : \n"; AtAAtb.print();
 
-			//compute recreated vector
-			matrix proj(0,0); multiply(A,AtAAtb,proj);
-			cout << "proj: \n"; proj.print();
+				//compute recreated vector
+				matrix proj(0, 0); multiply(A, AtAAtb, proj);
+				//cout << "proj: \n"; proj.print();
 
-			//compute cost
-			double cost=0;
-			for(int k=0; k<b.size().first; ++k){
-				cost += abs(b.grid[k][0] - proj.grid[k][0]);
-			}
-
-			//add linear dependence or add to basis
-			if(cost <= error){
-				vector<dep> deps;
-				for (int k = 0; k < rowsInBasis.size(); ++k) {
-					deps.push_back({ rowsInBasis[k], AtAAtb.grid[k][0] });
+				//compute max deviation
+				double cost = 0;
+				for (int k = 0; k < b.size().first; ++k) {
+					cost = max(cost, abs(b.grid[k][0] - proj.grid[k][0]));
 				}
-				rowDeps[i] = deps;
-				
-			}
-			else{
-				A.append(grid[i]);
-				rowsInBasis.push_back(i);
-			}
 
+				//add linear dependence or add to basis
+				if (cost <= error) {
+					vector<dep> deps;
+					for (int k = 0; k < rowsInBasis.size(); ++k) {
+						if(abs(AtAAtb.grid[k][0]) > epsilon) deps.push_back({ rowsInBasis[k], AtAAtb.grid[k][0] });
+					}
+					if(iter==0) rowDeps[i] = deps; 
+					else colDeps[i] = deps;
+
+				}
+				else {
+					A.append(grid[i]);
+					rowsInBasis.push_back(i);
+				}
+			}
+			transpose();
 		}
     }
 
