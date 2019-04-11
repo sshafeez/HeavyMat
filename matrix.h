@@ -67,6 +67,29 @@ class matrix{
     pair<int,int> size(){
         return pair<int,int>(grid.size(),grid[0].size());
     }
+	
+    //return n/2 by n/2 matrix consisting of one of 4 quadrants of current matrix
+    matrix split(int pos) {
+        matrix mat = matrix(grid.size()/2,grid.size()/2);
+        // if 0 or 1, start in row 0, end in row grid.size()/2-1;
+        // if 2 or 3, start in row grid.size()/2, end in row grid.size();
+        int rowStart = ((pos == 0 || pos == 1) ? 0 : grid.size()/2);
+        int rowEnd = ((pos == 0 || pos == 1) ? grid.size()/2 : grid.size());
+        // if 0 or 2, start in col 0, end in col grid.size()/2-1;
+        // if 1 or 3, start in col grid.size()/2, end in col grid.size();
+        int colStart = ((pos == 0 || pos == 2) ? 0 : grid.size()/2);
+        int colEnd = ((pos == 0 || pos == 2) ? grid.size()/2 : grid.size());
+        int matRow = 0;
+        for (int row = rowStart; row < rowEnd; ++row) {
+            int matCol = 0;
+            for (int col = colStart; col < colEnd; ++col) {
+                mat.grid[matRow][matCol] = grid[row][col];
+                ++matCol;
+            }
+            ++matRow;
+        }
+        return mat;
+    }
 
 	//invert the matrix
 	void invert() {
