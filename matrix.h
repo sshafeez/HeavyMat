@@ -11,14 +11,11 @@ using namespace std;
 ///////////////////// NAIVE MATRIX //////////////////////////////
 
 class matrix{
-    protected:
+    public:
     vector<vector<double>> grid;
-	public:
+	
     //Create N rows of M columns
     matrix(int rows, int cols, bool initRandom=false){
-        if(rows==0 || cols==0){
-            throw "Matrix cannot have 0 rows or columns";
-        }
         grid.resize(rows, vector<double>(cols,0));
         if(initRandom){
             for(int i=0; i<rows; ++i){
@@ -29,11 +26,18 @@ class matrix{
         }
     }
 
+	//copy constructor
 	matrix(matrix& mat) {
-		for (int i = 0; i < mat.size().first; ++i) {
-			for (int j = 0; j < mat.size().second; ++j) {
-				grid[i][j] = mat.at(i, j);
-			}
+		grid =  mat.grid;
+	}
+
+	//append col vector
+	void append(vector<double>& col){
+		if (grid.empty()) {
+			grid.resize(col.size());
+		}
+		for(int i=0; i<grid.size(); ++i){
+			grid[i].push_back(col[i]);
 		}
 	}
 
@@ -125,25 +129,20 @@ class matrix{
 			++lead;
 		}
 		grid = identity;
-		print();
-
 	}
 
 	//transpose the matrix
 	void transpose() {
-		matrix transposed(size().first, size().second);
+		vector<vector<double>> transposed;
+		transposed.resize(size().second, vector<double>(size().first, 0));
 		for (int i = 0; i < size().first; ++i) {
 			for (int j = 0; j < size().second; ++j) {
-				transposed.at(j, i) = grid[i][j];
+				transposed[j][i] = grid[i][j];
 			}
 		}
-		for (int i = 0; i < size().first; ++i) {
-			for (int j = 0; j < size().second; ++j) {
-				grid[i][j] = transposed.at(i, j);
-			}
-		}
+		grid = transposed;
 	}
-    friend void multiply(matrix& left, matrix& right, matrix& dest);
+
 
 };
 
@@ -152,6 +151,7 @@ class matrix{
 
 void multiply(matrix& left, matrix& right, matrix& dest){
     if(left.size().second != right.size().first) throw "inner dimension mismatch";
+	dest.grid.resize(left.size().first, vector<double>(right.size().second,0));
 
     /// (mxn) * (pxq) = (mxq)
     int rows = left.size().first;
@@ -171,7 +171,7 @@ void multiply(matrix& left, matrix& right, matrix& dest){
 ///////////////////// MATRIX WITH LINEAR DEPENDENCIES CACHED //////////////////////////////
 
 class heavy_matrix : public matrix{
-    private:
+    public:
     struct dep{
         int index;
         double scalar;
@@ -179,15 +179,62 @@ class heavy_matrix : public matrix{
     unordered_map<int,vector<dep>> rowDeps;
     unordered_map<int,vector<dep>> colDeps;
 
-    public:
+    
     
     heavy_matrix(int rows, int cols, bool initRandom = false): matrix(rows,cols,initRandom){}
-    void cache(){
+
+	//find linear dependencies
+    void cache(double error=0){
         rowDeps.clear(); 
         colDeps.clear(); 
+
+		//get row deps
+		matrix A(0, 0); //holds basis
+		vector<int> rowsInBasis = {0};
+		A.append(grid[0]);
+		for(int i=1; i < size().first; ++i){
+			cout << "A: \n"; A.print();
+			//compute least squares B vector
+			matrix b(0,0); b.append(grid[i]);
+			cout << "b: \n"; b.print();
+			matrix At = A; At.transpose();
+			cout << "At: \n"; At.print();
+			matrix AtA(0,0); multiply(At,A,AtA);
+			cout << "AtA: \n"; AtA.print();
+			AtA.invert();
+			cout << "AtA inverted: \n"; AtA.print();
+			matrix AtAAt(0,0); multiply(AtA,At,AtAAt);
+			cout << "AtAAt : \n"; AtAAt.print();
+			matrix AtAAtb(0,0); multiply(AtAAt,b,AtAAtb);
+			cout << "AtAAtb : \n"; AtAAtb.print();
+
+			//compute recreated vector
+			matrix proj(0,0); multiply(A,AtAAtb,proj);
+			cout << "proj: \n"; proj.print();
+
+			//compute cost
+			double cost=0;
+			for(int k=0; k<b.size().first; ++k){
+				cost += abs(b.grid[k][0] - proj.grid[k][0]);
+			}
+
+			//add linear dependence or add to basis
+			if(cost <= error){
+				vector<dep> deps;
+				for (int k = 0; k < rowsInBasis.size(); ++k) {
+					deps.push_back({ rowsInBasis[k], AtAAtb.grid[k][0] });
+				}
+				rowDeps[i] = deps;
+				
+			}
+			else{
+				A.append(grid[i]);
+				rowsInBasis.push_back(i);
+			}
+
+		}
     }
 
-    friend void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest);
 };
 
 void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
