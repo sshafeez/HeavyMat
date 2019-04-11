@@ -68,6 +68,17 @@ class matrix{
         return pair<int,int>(grid.size(),grid[0].size());
     }
 	
+    //matrix addition
+    matrix operator+(matrix mat) {
+        matrix result(mat.size().first,mat.size().first);
+        for (int row = 0; row < mat.size().first; ++row) {
+            for (int col = 0; col < mat.size().first; ++col) {
+                result.grid[row][col] = grid[row][col] + mat.grid[row][col];
+            }
+        }
+        return result;
+    }
+	
     //return n/2 by n/2 matrix consisting of one of 4 quadrants of current matrix
     matrix split(int pos) {
         matrix mat = matrix(grid.size()/2,grid.size()/2);
