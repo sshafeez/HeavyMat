@@ -185,6 +185,24 @@ class matrix{
 
 };
 
+// Joins 4 matrices into one large matrix (2n by 2n) where each matrix is a quadrant of the larger matrix
+matrix join(matrix &first, matrix &second, matrix &third, matrix &fourth) {
+    matrix result(first.size().first*2, first.size().first*2);
+    int gridRow = 0;
+    for (int row = 0; row < first.size().first; ++row) {
+        int gridCol = 0;
+        for (int col = 0; col < first.size().first; ++col) {
+            result.grid[gridRow][gridCol] = first.grid[gridRow][gridCol];
+            result.grid[gridRow][gridCol+first.size().first] = second.grid[gridRow][gridCol];
+            result.grid[gridRow+first.size().first][gridCol] = third.grid[gridRow][gridCol];
+            result.grid[gridRow+first.size().first][gridCol+first.size().first] = fourth.grid[gridRow][gridCol];
+            ++gridCol;
+        }
+        ++gridRow;
+    }
+    return result;
+}
+
 
 //basic multiplication
 
