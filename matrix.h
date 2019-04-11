@@ -173,6 +173,49 @@ void multiply(matrix& left, matrix& right, matrix& dest){
     }
 }
 
+//Strassen multiplication
+
+matrix strassen_multiply(matrix &left, matrix &right) {
+    //Base case
+    if (left.size().first == 2) {
+        int a = left.at(0,0);
+        int b = left.at(0,1);
+        int c = left.at(1,0);
+        int d = left.at(1,1);
+        int e = right.at(0,0);
+        int f = right.at(0,1);
+        int g = right.at(1,0);
+        int h = right.at(1,1);
+        int m1 = a*(f-h);
+        int m2 = (a+b)*h;
+        int m3 = (c+d)*e;
+        int m4 = d*(g-e);
+        int m5 = (a+d)*(e+h);
+        int m6 = (b-d)*(g+h);
+        int m7 = (a-c)*(e+f);
+        matrix result(2,2);
+        result.at(0,0) = m5+m4-m2+m6;
+        result.at(0,1) = m1+m2;
+        result.at(1,0) = m3+m4;
+        result.at(1,1) = m1+m5-m3-m7;
+        return result;
+    }
+    //Inductive step
+    matrix a11 = left.split(0);
+    matrix a12 = left.split(1);
+    matrix a21 = left.split(2);
+    matrix a22 = left.split(3);
+    matrix b11 = right.split(0);
+    matrix b12 = right.split(1);
+    matrix b21 = right.split(2);
+    matrix b22 = right.split(3);
+    matrix c11 = strassen_multiply(a11,b11)+strassen_multiply(a12,b21);
+    matrix c12 = strassen_multiply(a11,b12)+strassen_multiply(a12,b22);
+    matrix c21 = strassen_multiply(a21,b11)+strassen_multiply(a22,b21);
+    matrix c22 = strassen_multiply(a21,b12)+strassen_multiply(a22,b22);
+    return join(c11,c12,c21,c22);
+}
+
 
 ///////////////////// MATRIX WITH LINEAR DEPENDENCIES CACHED //////////////////////////////
 
