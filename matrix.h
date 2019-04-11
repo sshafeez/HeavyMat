@@ -9,6 +9,9 @@ using namespace std;
 
 #define epsilon 0.000001
 
+long int mults = 0;
+long int adds = 0;
+
 
 ///////////////////// NAIVE MATRIX //////////////////////////////
 
@@ -163,6 +166,7 @@ void multiply(matrix& left, matrix& right, matrix& dest){
         for(int j=0; j<cols; ++j){
             dest.at(i,j) = 0;
             for(int k=0; k<n; ++k){
+				mults += 2; adds++;
 				dest.at(i,j) += left.at(i,k) * right.at(k,j);
             }
         }
@@ -254,16 +258,19 @@ void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
 			dest.at(i,j) = 0;
             if(left.rowDeps.count(i)){
                 for(heavy_matrix::dep& comb : left.rowDeps[i]){
+					mults += 2; adds++;
 					dest.at(i,j) += comb.scalar * dest.at(comb.index,j);
                 }
             }
             else if(right.colDeps.count(j)){
                 for(heavy_matrix::dep& comb : right.colDeps[i]){
+					mults += 2; adds++;
 					dest.at(i,j) += comb.scalar * dest.at(i,comb.index);
                 }
             }
             else{
                 for(int k=0; k<n; ++k){
+					mults += 2; adds++;
 					dest.at(i,j) += left.at(i,k) * right.at(k,j);
                 }
             }
