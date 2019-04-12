@@ -18,7 +18,6 @@ void image_read(char const *filepath, int width, int height, vector<vector<unsig
     for (int i = 0; i < vec.size(); ++i) {
         vec[i] = vector<unsigned>(width*bpp,0);
     }
-    cout << vec.size() << " " << vec[0].size() << endl;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width*bpp; ++j) {
             vec[i][j] = unsigned(rgb_image[width*bpp*i+j]);
@@ -32,7 +31,6 @@ void image_read(char const *filepath, int width, int height, vector<vector<unsig
 void image_write(char const *filepath, vector<vector<unsigned> > &vec) {
     int width = vec[0].size();
     int height = vec.size();
-    cout << width << " " << height << endl;
     int bpp = 3;
     uint8_t* rgb_image;
     rgb_image = (uint8_t*) malloc(width*height*bpp);
