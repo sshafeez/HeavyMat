@@ -1,16 +1,11 @@
-#include "matrix.h"
-#include <iostream>
+#include <vector>
+#include "image.h"
+
 using namespace std;
 
-int main(){
-    heavy_matrix A(100,4,true);
-	A.print();
-	A.cache(50);
-	
-
-   
-    
-
+int main() {
+    vector<vector<unsigned> > vec;
+    image_read("usFlag.png", 425, 276, vec);
+    image_write("image.png", vec);
     return 0;
-
 }
