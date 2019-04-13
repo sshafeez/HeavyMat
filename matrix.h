@@ -20,20 +20,23 @@ class matrix{
     vector<vector<double>> grid;
 	
     //Create N rows of M columns
-    matrix(int rows, int cols, bool initRandom=false){
-        grid.resize(rows, vector<double>(cols,0));
-        if(initRandom){
-            for(int i=0; i<rows; ++i){
-                for(int j=0; j<cols; ++j){
-                    grid[i][j] = rand() % 1000;
-                }
-            }
-        }
-    }
+	matrix(int rows, int cols, bool initRandom = false) {
+		grid.resize(rows, vector<double>(cols, 0));
+		if (initRandom) {
+			for (int i = 0; i < rows; ++i) {
+				for (int j = 0; j < cols; ++j) {
+					grid[i][j] = rand() % 1000;
+				}
+			}
+		}
+	}
 
-	//copy constructor
+	//copy constructors
 	matrix(matrix& mat) {
 		grid =  mat.grid;
+	}
+	matrix(vector<vector<double>>& data) {
+		grid = data;
 	}
 
 	//append col vector
