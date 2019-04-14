@@ -12,6 +12,7 @@ using namespace std;
 long int mults = 0;
 long int adds = 0;
 
+enum print{res,perf,resPerf}; // call print() w/res for result matrix, perf for performance data, resPerf for both
 
 ///////////////////// NAIVE MATRIX //////////////////////////////
 
@@ -55,15 +56,21 @@ class matrix{
     }
     
     //print contents
-    void print(){
-        for(int i=0; i<grid.size(); ++i){
-            for(int j=0; j<grid[0].size(); ++j){
-                cout<<grid[i][j]<<" ";
-                //cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
+    void print(enum print pr){
+        if (pr == 0 || pr == 2) {
+            for(int i=0; i<grid.size(); ++i){
+                for(int j=0; j<grid[0].size(); ++j){
+                    cout<<grid[i][j]<<" ";
+                    //cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
+                }
+                cout<<"\n";
             }
-            cout<<"\n";
+        }
+        if (pr == 1 || pr == 2) {
+            cout << "# Mults: " << mults << "; # Adds: " << adds;
         }
         cout<<endl;
+        mults = 0; adds = 0;
     }
 
     //get size in <rows,columns>
