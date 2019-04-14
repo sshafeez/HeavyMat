@@ -222,9 +222,10 @@ void multiply(matrix& left, matrix& right, matrix& dest){
         for(int j=0; j<cols; ++j){
             dest.at(i,j) = 0;
             for(int k=0; k<n; ++k){
-				mults += 2; adds++;
-				dest.at(i,j) += left.at(i,k) * right.at(k,j);
+		mults++; adds++;
+		dest.at(i,j) += left.at(i,k) * right.at(k,j);
             }
+	    adds--;
         }
     }
 }
