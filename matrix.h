@@ -79,6 +79,7 @@ class matrix{
                 result.grid[row][col] = grid[row][col] + mat.grid[row][col];
             }
         }
+	adds += mat.size().first * mat.size().first;
         return result;
     }
 	
@@ -253,6 +254,7 @@ matrix strassen_multiply_helper(matrix &left, matrix &right) {
         result.at(0,1) = m1+m2;
         result.at(1,0) = m3+m4;
         result.at(1,1) = m1+m5-m3-m7;
+	mults += 7; adds += 18;
         return result;
     }
     //Inductive step
