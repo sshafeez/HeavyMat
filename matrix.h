@@ -230,7 +230,7 @@ void multiply(matrix& left, matrix& right, matrix& dest){
 
 //Strassen multiplication
 
-matrix strassen_multiply(matrix &left, matrix &right) {
+matrix strassen_multiply_helper(matrix &left, matrix &right) {
     //Base case
     if (left.size().first == 2) {
         int a = left.at(0,0);
@@ -264,11 +264,15 @@ matrix strassen_multiply(matrix &left, matrix &right) {
     matrix b12 = right.split(1);
     matrix b21 = right.split(2);
     matrix b22 = right.split(3);
-    matrix c11 = strassen_multiply(a11,b11)+strassen_multiply(a12,b21);
-    matrix c12 = strassen_multiply(a11,b12)+strassen_multiply(a12,b22);
-    matrix c21 = strassen_multiply(a21,b11)+strassen_multiply(a22,b21);
-    matrix c22 = strassen_multiply(a21,b12)+strassen_multiply(a22,b22);
+    matrix c11 = strassen_multiply_helper(a11,b11)+strassen_multiply_helper(a12,b21);
+    matrix c12 = strassen_multiply_helper(a11,b12)+strassen_multiply_helper(a12,b22);
+    matrix c21 = strassen_multiply_helper(a21,b11)+strassen_multiply_helper(a22,b21);
+    matrix c22 = strassen_multiply_helper(a21,b12)+strassen_multiply_helper(a22,b22);
     return join(c11,c12,c21,c22);
+}
+
+void strassen_multiply(matrix &left, matrix &right, matrix &dest) {
+    dest = strassen_multiply_helper(left,right);
 }
 
 
