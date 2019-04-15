@@ -370,21 +370,24 @@ void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
 			dest.at(i,j) = 0;
             if(left.rowDeps.count(i)){
                 for(heavy_matrix::dep& comb : left.rowDeps[i]){
-					mults += 2; adds++;
+					mults++; adds++;
 					dest.at(i,j) += comb.scalar * dest.at(comb.index,j);
                 }
+		adds--;
             }
             else if(right.colDeps.count(j)){
                 for(heavy_matrix::dep& comb : right.colDeps[i]){
-					mults += 2; adds++;
+					mults++; adds++;
 					dest.at(i,j) += comb.scalar * dest.at(i,comb.index);
                 }
+		adds--;
             }
             else{
                 for(int k=0; k<n; ++k){
-					mults += 2; adds++;
+					mults++; adds++;
 					dest.at(i,j) += left.at(i,k) * right.at(k,j);
                 }
+		adds--;
             }
             
         }
