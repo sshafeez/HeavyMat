@@ -67,12 +67,47 @@ using namespace std;
 
 ///////////////////////////////////////////////////////
 
-Vector<float> SVD(Matrix<float> &m)
+void eliminateBasis(Matrix<float> &Sg, float error) {
+    int vecs = 0;
+    for (int i = Sg.GetRows()-1; i >= 0; --i) {
+        if (Sg[i][i] < error) {
+            Sg[i][i] = 0;
+            ++vecs;
+        }
+        else {
+            cout << "Eliminated " << vecs << " vectors\n";
+            break;
+        }
+    }
+}
+
+Matrix<float> formMatrix(Vector<float> Sg) {
+    float* data = (float*) malloc(sizeof(float)*Sg.Size()*Sg.Size());
+    for (int i = 0; i < Sg.Size(); ++i) {
+        for (int j = 0; j < Sg.Size(); ++j) {
+            if (i == j) {
+                data[i*Sg.Size()+j] = Sg[i];
+            }
+            else {
+                data[i*Sg.Size()+j] = 0;
+            }
+        }
+    }
+    Matrix<float> S(Sg.Size(), Sg.Size(), data);
+    //S.Print();
+    return S;
+}
+
+Vector<float> SVD(Matrix<float> &a, Matrix<float> &b, Matrix<float> &c)
 {
-	Vector<float> w(m.GetRows());
-	Matrix<float> v(m.GetRows(),m.GetCols());
-	dsvd(m, m.GetRows(), m.GetCols(), w.GetRawData(), v);
-	m.SortCols(w);
+	Vector<float> w(a.GetRows());
+	Matrix<float> v(a.GetRows(),a.GetCols());
+	dsvd(a, a.GetRows(), a.GetCols(), w.GetRawData(), v);
+    Vector<float> w1 = w;
+	a.SortCols(w);
+    v.SortCols(w1);
+    b = formMatrix(w);
+    c = v;
 	return w;
 }
 
