@@ -11,17 +11,21 @@
 
 // Specify filepath of image to be read, width/height of image, and a 2D vec of unsigned ints (any size).  Modifies provided 2D vector to contain pixels represented as unsigned ints.
 // Note: This is designed only for colored, RGB PNG images with 3 bytes per pixel (hence width of 2D vec is width*3).
-void image_read(char const *filepath, int width, int height, vector<vector<double> > &vec) {
+void image_read(char const *filepath, int width, int height, vector<vector<double> > &R, vector<vector<double> > &G, vector<vector<double> > &B) {
     int bpp;
     uint8_t* rgb_image = stbi_load(filepath, &width, &height, &bpp, 3);
     bpp = 3;
-    vec.resize(height);
-    for (int i = 0; i < vec.size(); ++i) {
-        vec[i] = vector<double>(width*bpp,0);
+    R.resize(height); G.resize(height); B.resize(height);
+    for (int i = 0; i < height; ++i) {
+        R[i] = vector<double>(width,0);
+        G[i] = vector<double>(width,0);
+        B[i] = vector<double>(width,0);
     }
     for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width*bpp; ++j) {
-            vec[i][j] = double(rgb_image[width*bpp*i+j]);
+        for (int j = 0; j < width*bpp; j+=bpp) {
+            R[i][j/bpp] = double(rgb_image[width*bpp*i+j]);
+            G[i][j/bpp] = double(rgb_image[width*bpp*i+j+1]);
+            B[i][j/bpp] = double(rgb_image[width*bpp*i+j+2]);
         }
     }
     stbi_image_free(rgb_image);
@@ -29,17 +33,19 @@ void image_read(char const *filepath, int width, int height, vector<vector<doubl
 
 // Specify filepath where image should be written, and provide 2D vec of unsigned ints containing pixels of image.
 // Note: This is designed only for colored, RGB PNG images with 3 bytes per pixel
-void image_write(char const *filepath, vector<vector<double> > &vec) {
-    int width = vec[0].size();
-    int height = vec.size();
+void image_write(char const *filepath, vector<vector<double> > &R, vector<vector<double> > &G, vector<vector<double> > &B) {
+    int width = R[0].size();
+    int height = R.size();
     int bpp = 3;
     uint8_t* rgb_image;
     rgb_image = (uint8_t*) malloc(width*height*bpp);
     for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width*bpp; ++j) {
-            rgb_image[width*bpp*i+j] = uint8_t(vec[i][j]);
+        for (int j = 0; j < width; ++j) {
+            rgb_image[width*bpp*i+bpp*j] = uint8_t(R[i][j]);
+            rgb_image[width*bpp*i+bpp*j+1] = uint8_t(G[i][j]);
+            rgb_image[width*bpp*i+bpp*j+2] = uint8_t(B[i][j]);
         }
     }
-    stbi_write_png(filepath, width/3, height, bpp, rgb_image, width*bpp);
+    stbi_write_png(filepath, width, height, bpp, rgb_image, width*bpp);
     free(rgb_image);
 }
