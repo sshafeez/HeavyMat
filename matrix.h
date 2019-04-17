@@ -5,9 +5,11 @@
 #include <iomanip>
 #include <unordered_map>
 #include <algorithm>
+#include <math.h>  
 using namespace std;
 
-#define epsilon 0.000001
+#define epsilon 0.00001
+#define max_num 1000
 
 long int mults = 0;
 long int adds = 0;
@@ -26,7 +28,7 @@ class matrix{
 		if (initRandom) {
 			for (int i = 0; i < rows; ++i) {
 				for (int j = 0; j < cols; ++j) {
-					grid[i][j] = rand() % 1000;
+					grid[i][j] = rand() % max_num;
 				}
 			}
 		}
@@ -86,7 +88,17 @@ class matrix{
                 result.grid[row][col] = grid[row][col] + mat.grid[row][col];
             }
         }
-	adds += mat.size().first * mat.size().first;
+		adds += mat.size().first * mat.size().first;
+        return result;
+    }
+	matrix operator-(matrix mat) {
+        matrix result(mat.size().first,mat.size().first);
+        for (int row = 0; row < mat.size().first; ++row) {
+            for (int col = 0; col < mat.size().first; ++col) {
+                result.grid[row][col] = grid[row][col] - mat.grid[row][col];
+            }
+        }
+		adds += mat.size().first * mat.size().first;
         return result;
     }
 	
@@ -287,6 +299,32 @@ void strassen_multiply(matrix &left, matrix &right, matrix &dest) {
 
 
 ///////////////////// MATRIX WITH LINEAR DEPENDENCIES CACHED //////////////////////////////
+matrix LSR(matrix& A, matrix& b){
+	matrix At = A; At.transpose();
+	matrix AtA(0, 0); multiply(At, A, AtA);
+	AtA.invert();
+	matrix AtAAt(0, 0); multiply(AtA, At, AtAAt);
+	matrix AtAAtb(0, 0); multiply(AtAAt, b, AtAAtb);
+	return AtAAtb;
+}
+
+double angle(matrix* A, int v1, matrix& b){
+	double dot = 0;
+	for(int i=0; i<A->grid[v1].size(); ++i){
+		dot += A->grid[v1][i] * b.grid[i][0];
+	}
+
+	double magv1 = 0;
+	double magv2 = 0;
+	for(int i=0; i<A->grid[v1].size(); ++i){
+		magv1 += A->grid[v1][i] * A->grid[v1][i];
+		magv2 += b.grid[i][0] * b.grid[i][0];
+	}
+	magv1 = sqrt(magv1);
+	magv2 = sqrt(magv2);
+
+	return  abs( acos( dot / ( magv1 * magv2) ) );
+}
 
 class heavy_matrix : public matrix{
     public:
@@ -300,61 +338,143 @@ class heavy_matrix : public matrix{
     
     
     heavy_matrix(int rows, int cols, bool initRandom = false): matrix(rows,cols,initRandom){}
+	heavy_matrix(vector<vector<double>>& data): matrix(data) {}
 
 	//find linear dependencies
     void cache(double error=epsilon){
         rowDeps.clear(); 
         colDeps.clear(); 
 
-		for (int iter = 0; iter < 2; ++iter) {
-			//get row deps
-			matrix A(0, 0); //holds basis
-			vector<int> rowsInBasis = { 0 };
-			A.append(grid[0]);
+		for (int passes = 0; passes < 2; ++passes) {
 			for (int i = 1; i < size().first; ++i) {
-				//cout << "A: \n"; A.print();
-				//compute least squares B vector
+				cout << i << " ";
+				//empty basis
+				matrix A(0, 0);
+				vector<int> rowsInBasis;
+
+				//select the vector to reconstruct
 				matrix b(0, 0); b.append(grid[i]);
-				//cout << "b: \n"; b.print();
-				matrix At = A; At.transpose();
-				//cout << "At: \n"; At.print();
-				matrix AtA(0, 0); multiply(At, A, AtA);
-				//cout << "AtA: \n"; AtA.print();
-				AtA.invert();
-				//cout << "AtA inverted: \n"; AtA.print();
-				matrix AtAAt(0, 0); multiply(AtA, At, AtAAt);
-				//cout << "AtAAt : \n"; AtAAt.print();
-				matrix AtAAtb(0, 0); multiply(AtAAt, b, AtAAtb);
-				//cout << "AtAAtb : \n"; AtAAtb.print();
+				matrix rem(0, 0); rem.append(grid[i]);
+				matrix proj(0, 0);
+				//cout << "b: \n"; b.print(res);
+				double cost = error +1;
 
-				//compute recreated vector
-				matrix proj(0, 0); multiply(A, AtAAtb, proj);
-				//cout << "proj: \n"; proj.print();
+				//store computed Bmatrix
+				vector<dep> weights;
 
-				//compute max deviation
-				double cost = 0;
-				for (int k = 0; k < b.size().first; ++k) {
-					cost = max(cost, abs(b.grid[k][0] - proj.grid[k][0]));
-				}
-
-				//add linear dependence or add to basis
-				if (cost <= error) {
-					vector<dep> deps;
-					for (int k = 0; k < rowsInBasis.size(); ++k) {
-						if(abs(AtAAtb.grid[k][0]) > epsilon) deps.push_back({ rowsInBasis[k], AtAAtb.grid[k][0] });
+				int iters = 0;
+				while(cost > error && iters < i){
+					//add best vector to basis
+					int bestIndex = i-1;
+					double bestAngle = 999;
+					for(int k=i-1; k>=0; --k){
+						//avoid duplicate vectors and dependent vectors
+						if (passes == 0 && rowDeps.count(k) != 0) continue;
+						if (passes == 1 && colDeps.count(k) != 0) continue;
+						if (std::find(rowsInBasis.begin(), rowsInBasis.end(), k) != rowsInBasis.end()) continue;
+						if(angle(this,k,rem) < bestAngle){
+							bestAngle = angle(this,k,rem);
+							bestIndex = k;
+						}
 					}
-					if(iter==0) rowDeps[i] = deps; 
-					else colDeps[i] = deps;
+					
+					//ignore if we try readding a vector to basis
+					A.append(grid[bestIndex]);
+					rowsInBasis.push_back(bestIndex);
 
+					//get least squares and store B matrix
+						matrix AtAAtb = LSR(A,b);
+					weights.clear();
+					for(int k=0; k<AtAAtb.grid.size(); ++k){
+						if(abs(AtAAtb.grid[k][0]) > epsilon) weights.push_back({rowsInBasis[k],AtAAtb.grid[k][0]});
+					}
+
+					//compute recreated vector
+					multiply(A, AtAAtb, proj); 
+
+
+					//compute max deviation and update remaining components
+					cost = 0;
+					for (int k = 0; k < b.size().first; ++k) {
+						cost = max(cost, abs(b.grid[k][0] - proj.grid[k][0]));
+						rem.grid[k][0] = b.grid[k][0] - proj.grid[k][0];
+					}
+
+					iters++;
+				}
+				
+				if (cost < error && weights.size() < b.size().first) {
+					//cout << "proj: \n"; proj.print(res);
+					//cout << "Adding dep size: " << weights.size() << endl;
+					if (passes == 0) rowDeps[i] = weights;
+					else colDeps[i] = weights;
+				}
+			}
+			transpose();
+			//cout << "###############################################################\n";
+		}
+    }
+
+	//compress image based on linear dependencies
+	void writeback(double max_val = max_num) {
+		//decide dimension to compress on
+		int rowSavings = 0;
+		for (int i = 0; i < grid.size(); ++i) {
+			if (rowDeps.count(i)) {
+				rowSavings += grid[0].size() - rowDeps[i].size();
+			}
+		}
+
+		int colSavings = 0;
+		for (int i = 0; i < grid[0].size(); ++i) {
+			if (colDeps.count(i)) {
+				colSavings += grid.size() - colDeps[i].size();
+			}
+		}
+
+		cout << "rowSavings: " << rowSavings << " colSavings: " << colSavings << endl;
+
+		//compute new grid
+		
+
+		if (rowSavings > colSavings) {
+			vector<vector<double>> compressed(grid.size(), vector<double>(grid[0].size(), 0));
+			for (int i = 0; i < grid.size(); ++i) {
+				if (rowDeps.count(i)) {
+					for (int k = 0; k < rowDeps[i].size(); ++k) {
+						for (int j = 0; j < grid[0].size(); ++j) {
+							compressed[i][j] += rowDeps[i][k].scalar * grid[rowDeps[i][k].index][j];
+							compressed[i][j] = (int)compressed[i][j] % max_num;
+						}
+					}
 				}
 				else {
-					A.append(grid[i]);
-					rowsInBasis.push_back(i);
+					compressed[i] = grid[i];
+				}
+			}
+			grid = compressed;
+		}
+		else {
+			transpose();
+			vector<vector<double>> compressed(grid.size(), vector<double>(grid[0].size(), 0));
+			for (int i = 0; i < grid.size(); ++i) {
+				if (colDeps.count(i)) {
+					for (int k = 0; k < colDeps[i].size(); ++k) {
+						for (int j = 0; j < grid[0].size(); ++j) {
+							compressed[i][j] += colDeps[i][k].scalar * grid[colDeps[i][k].index][j];
+						}
+					}
+				}
+				else {
+					compressed[i] = grid[i];
 				}
 			}
 			transpose();
 		}
-    }
+
+	
+		
+	}
 
 };
 
@@ -373,21 +493,21 @@ void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
 					mults++; adds++;
 					dest.at(i,j) += comb.scalar * dest.at(comb.index,j);
                 }
-		adds--;
+				adds--;
             }
             else if(right.colDeps.count(j)){
                 for(heavy_matrix::dep& comb : right.colDeps[i]){
 					mults++; adds++;
 					dest.at(i,j) += comb.scalar * dest.at(i,comb.index);
                 }
-		adds--;
+				adds--;
             }
             else{
                 for(int k=0; k<n; ++k){
 					mults++; adds++;
 					dest.at(i,j) += left.at(i,k) * right.at(k,j);
                 }
-		adds--;
+				adds--;
             }
             
         }

@@ -11,8 +11,8 @@
 
 // Specify filepath of image to be read, width/height of image, and a 2D vec of unsigned ints (any size).  Modifies provided 2D vector to contain pixels represented as unsigned ints.
 // Note: This is designed only for colored, RGB PNG images with 3 bytes per pixel (hence width of 2D vec is width*3).
-void image_read(char const *filepath, int width, int height, vector<vector<double> > &R, vector<vector<double> > &G, vector<vector<double> > &B) {
-    int bpp;
+void image_read(char const *filepath, vector<vector<double> > &R, vector<vector<double> > &G, vector<vector<double> > &B) {
+    int bpp,height,width;
     uint8_t* rgb_image = stbi_load(filepath, &width, &height, &bpp, 3);
     bpp = 3;
     R.resize(height); G.resize(height); B.resize(height);

@@ -1,0 +1,6 @@
+rowSavings: 11249 colSavings: 10913
+R
+rowSavings: 11439 colSavings: 11200
+G
+rowSavings: 12340 colSavings: 11653
+B
