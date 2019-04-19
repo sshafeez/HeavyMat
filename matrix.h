@@ -35,7 +35,7 @@ class matrix{
 	}
 
 	//copy constructors
-	matrix(matrix& mat) {
+	matrix(const matrix& mat) {
 		grid =  mat.grid;
 	}
 	matrix(vector<vector<double>>& data) {
