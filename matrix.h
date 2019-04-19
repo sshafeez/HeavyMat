@@ -6,14 +6,16 @@
 #include <unordered_map>
 #include <algorithm>
 #include <math.h>  
+#include <mutex>
 using namespace std;
 
 #define epsilon 0.00001
-#define max_num 1000
+#define max_num 256
 
 long int mults = 0;
 long int adds = 0;
 
+mutex printLock;
 enum print{res,perf,resPerf}; // call print() w/res for result matrix, perf for performance data, resPerf for both
 
 ///////////////////// NAIVE MATRIX //////////////////////////////
@@ -65,7 +67,7 @@ class matrix{
                     cout<<grid[i][j]<<" ";
                     //cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
                 }
-                cout<<"\n";
+                cout<<endl;
             }
         }
         if (pr == 1 || pr == 2) {
@@ -206,17 +208,17 @@ class matrix{
 	}
 	
 	void saturate() {
-        	for (int i = 0; i < size().first; ++i) {
-            		for (int j = 0; j < size().second; ++j) {
-                		if (grid[i][j] < 0) {
-                    			grid[i][j] = 0;
-                		}	
-                		if (grid[i][j] > 255) {
-                    			grid[i][j] = 255;
-                		}
-            		}
-        	}
-    	}
+        for (int i = 0; i < size().first; ++i) {
+                for (int j = 0; j < size().second; ++j) {
+                    if (grid[i][j] < 0) {
+                            grid[i][j] = 0;
+                    }	
+                    if (grid[i][j] > 255) {
+                            grid[i][j] = 255;
+                    }
+                }
+        }
+    }
 
 
 };
@@ -360,7 +362,7 @@ class heavy_matrix : public matrix{
 
 		for (int passes = 0; passes < 2; ++passes) {
 			for (int i = 1; i < size().first; ++i) {
-				cout << i << " ";
+				printLock.lock(); cout <<"id: "<<this_thread::get_id()<< " pass: " <<passes<< " i: "<<i<<endl; printLock.unlock();
 				//empty basis
 				matrix A(0, 0);
 				vector<int> rowsInBasis;
@@ -391,19 +393,20 @@ class heavy_matrix : public matrix{
 						}
 					}
 					
-					//ignore if we try readding a vector to basis
+					//add the vector to built basis
 					A.append(grid[bestIndex]);
 					rowsInBasis.push_back(bestIndex);
 
 					//get least squares and store B matrix
-						matrix AtAAtb = LSR(A,b);
+					matrix AtAAtb = LSR(A,b);
 					weights.clear();
 					for(int k=0; k<AtAAtb.grid.size(); ++k){
 						if(abs(AtAAtb.grid[k][0]) > epsilon) weights.push_back({rowsInBasis[k],AtAAtb.grid[k][0]});
 					}
 
 					//compute recreated vector
-					multiply(A, AtAAtb, proj); 
+					multiply(A, AtAAtb, proj);
+                    proj.saturate(); 
 
 
 					//compute max deviation and update remaining components
@@ -429,7 +432,7 @@ class heavy_matrix : public matrix{
     }
 
 	//compress image based on linear dependencies
-	void writeback(double max_val = max_num) {
+	void writeback() {
 		//decide dimension to compress on
 		int rowSavings = 0;
 		for (int i = 0; i < grid.size(); ++i) {
@@ -457,7 +460,7 @@ class heavy_matrix : public matrix{
 					for (int k = 0; k < rowDeps[i].size(); ++k) {
 						for (int j = 0; j < grid[0].size(); ++j) {
 							compressed[i][j] += rowDeps[i][k].scalar * grid[rowDeps[i][k].index][j];
-							compressed[i][j] = (int)compressed[i][j] % max_num;
+							compressed[i][j] = compressed[i][j];
 						}
 					}
 				}
@@ -484,9 +487,7 @@ class heavy_matrix : public matrix{
 			}
 			transpose();
 		}
-
-	
-		
+        saturate();
 	}
 
 };
