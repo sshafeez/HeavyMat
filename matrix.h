@@ -204,6 +204,19 @@ class matrix{
 		}
 		grid = transposed;
 	}
+	
+	void saturate() {
+        	for (int i = 0; i < size().first; ++i) {
+            		for (int j = 0; j < size().second; ++j) {
+                		if (grid[i][j] < 0) {
+                    			grid[i][j] = 0;
+                		}	
+                		if (grid[i][j] > 255) {
+                    			grid[i][j] = 255;
+                		}
+            		}
+        	}
+    	}
 
 
 };
