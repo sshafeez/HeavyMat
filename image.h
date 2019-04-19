@@ -11,8 +11,8 @@
 
 // Specify filepath of image to be read, width/height of image, and a 2D vec of unsigned ints (any size).  Modifies provided 2D vector to contain pixels represented as unsigned ints.
 // Note: This is designed only for colored, RGB PNG images with 3 bytes per pixel (hence width of 2D vec is width*3).
-void image_read(char const *filepath, vector<vector<double> > &R, vector<vector<double> > &G, vector<vector<double> > &B) {
-    int bpp,height,width;
+void image_read(char const *filepath, int width, int height, vector<vector<double> > &R, vector<vector<double> > &G, vector<vector<double> > &B) {
+    int bpp;
     uint8_t* rgb_image = stbi_load(filepath, &width, &height, &bpp, 3);
     bpp = 3;
     R.resize(height); G.resize(height); B.resize(height);
@@ -45,6 +45,31 @@ void image_write(char const *filepath, vector<vector<double> > &R, vector<vector
             rgb_image[width*bpp*i+bpp*j+1] = uint8_t(G[i][j]);
             rgb_image[width*bpp*i+bpp*j+2] = uint8_t(B[i][j]);
         }
+    }
+    stbi_write_png(filepath, width, height, bpp, rgb_image, width*bpp);
+    free(rgb_image);
+}
+
+void image_read(char const *filepath, int width, int height, float* R, float* G, float* B) {
+    int bpp = 3;
+    uint8_t* rgb_image = stbi_load(filepath, &width, &height, &bpp, 3);
+    //float* arr = (float *) malloc(sizeof(float)*width*height*bpp);
+    for (int i = 0; i < width*height*bpp; i+=3) {
+        R[i/3] = (float)rgb_image[i];
+        G[i/3] = (float)rgb_image[i+1];
+        B[i/3] = (float)rgb_image[i+2];
+    }
+    stbi_image_free(rgb_image);
+}
+
+void image_write(char const *filepath, int width, int height, float* R, float* G, float* B) {
+    int bpp = 3;
+    uint8_t* rgb_image;
+    rgb_image = (uint8_t*) malloc(width*height*bpp);
+    for (int i = 0; i < width*height; ++i) {
+        rgb_image[3*i] = (uint8_t)R[i];
+        rgb_image[3*i+1] = (uint8_t)G[i];
+        rgb_image[3*i+2] = (uint8_t)B[i];
     }
     stbi_write_png(filepath, width, height, bpp, rgb_image, width*bpp);
     free(rgb_image);
