@@ -9,7 +9,7 @@ int main() {
 	heavy_matrix G(0, 0);
 	heavy_matrix B(0, 0);
 	
-	image_read("M.png", R.grid, G.grid, B.grid);
+	image_read("Mario_Luigi.png", R.grid, G.grid, B.grid);
 	R.cache(100); R.writeback(255);
 	cout << "R \n";
 	G.cache(100); G.writeback(255);
@@ -17,7 +17,7 @@ int main() {
 	B.cache(100); B.writeback(255);
 	cout << "B \n";
 	  
-	image_write("M2.png", R.grid, G.grid, B.grid);
+	image_write("Mario_Luigi2.png", R.grid, G.grid, B.grid);
 
     return 0;
 }
