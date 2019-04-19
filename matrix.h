@@ -527,3 +527,16 @@ void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
         }
     }
 }
+
+double calcError(heavy_matrix& left, heavy_matrix& right){
+	if(left.size() != right.size()) throw "mismatch";
+	double maxErr=0,total=0;
+	for(int i=0; i<left.grid.size(); ++i){
+		for(int j=0; j<left.grid[0].size(); ++j){
+			total += abs(left.grid[i][j]-right.grid[i][j]);
+			maxErr = max(maxErr,abs(left.grid[i][j]-right.grid[i][j]));
+		}
+	}
+	cout<<"Max Error: "<<maxErr<<endl;
+	return total;
+}
