@@ -67,7 +67,67 @@ using namespace std;
 
 ///////////////////////////////////////////////////////
 
-void eliminateBasis(Matrix<float> &Sg, float error) {
+void normalizeGrid(Matrix<float> &grid) {
+    for (int i = 0; i < grid.GetRows(); ++i) {
+        for (int j = 0; j < grid.GetCols(); ++j) {
+            if (grid[i][j] < 0) {
+                grid[i][j] = 0;
+            }
+            if (grid[i][j] > 255) {
+                grid[i][j] = 255;
+            }
+        }
+    }
+}
+
+int calculateMaxError(Matrix<float> &first, Matrix<float> &second) {
+    float* data1 = first.GetRawData();
+    float* data2 = second.GetRawData();
+    int max = 0;
+    for (int i = 0; i < first.GetRows() * first.GetCols(); ++i) {
+        if (abs(data1[i] - data2[i]) > max) {
+            max = abs(data1[i] - data2[i]);
+            cout << data1[i] << " " << data2[i] << " " << abs(data1[i] - data2[i]) << "\n";
+        }
+        //cout << data1[i] << " " << data2[i] << "\n";
+    }
+    return max;
+}
+
+int calculateCumulativeError(Matrix<float> &first, Matrix<float> &second) {
+    float* data1 = first.GetRawData();
+    float* data2 = second.GetRawData();
+    int sum = 0;
+    for (int i = 0; i < first.GetRows() * first.GetCols(); ++i) {
+        sum += abs(data1[i] - data2[i]);
+    }
+    return sum;
+}
+
+int multRatio(int sizeL, int colsR, double r) {
+    int num = r*sizeL*sizeL*colsR;
+    double denom = 2*sizeL*colsR+sizeL;
+    cout << "Multiplication ratio " << r << endl;
+    return sizeL - int(num/denom);
+}
+
+double calcCompressionRatio(int rows, int vecs) {
+    int numEntries = rows * rows;
+    int numVecs = rows - vecs;
+    int total = numVecs*2*rows + numVecs;
+    double ratio = double(total) / numEntries;
+    return 1-ratio;
+}
+
+int calcNumMults(int rows, int vecs, int cols) {
+    return rows*vecs*(2*cols+1);
+}
+
+int calcNumAdds(int rows, int vecs, int cols) {
+    return ((rows-1)*cols*vecs + (vecs-1)*rows*cols);
+}
+
+void eliminateBasis(Matrix<float> &Sg, float error, int cols) {
     int vecs = 0;
     for (int i = Sg.GetRows()-1; i >= 0; --i) {
         if (Sg[i][i] < error) {
@@ -76,9 +136,37 @@ void eliminateBasis(Matrix<float> &Sg, float error) {
         }
         else {
             cout << "Eliminated " << vecs << " vectors\n";
+            cout << "Achieved compression ratio of " << calcCompressionRatio(Sg.GetRows(), vecs) << endl;
+            cout << " # Mults: " << calcNumMults(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
+            cout << " # Adds: " << calcNumAdds(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
             break;
         }
     }
+}
+
+void eliminateBasis(Matrix<float> &Sg, int vecs, int cols) {
+    for (int i = 0; i < vecs; ++i) {
+        Sg[Sg.GetRows()-1-i][Sg.GetRows()-1-i] = 0;
+    }
+    cout << "Eliminated " << vecs << " vectors\n";
+    cout << "Achieved compression ratio of " << calcCompressionRatio(Sg.GetRows(), vecs) << endl;
+    cout << " # Mults: " << calcNumMults(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
+    cout << " # Adds: " << calcNumAdds(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
+}
+
+void eliminateBasis(Matrix<float> &Sg, double ratio, int cols) {
+    ratio = 1-ratio;
+    int numEntries = Sg.GetRows() * Sg.GetRows();
+    double total = ratio * numEntries;
+    int numVecs = total / (2*Sg.GetRows()+1);
+    int vecs = Sg.GetRows() - numVecs;
+    for (int i = 0; i < vecs; ++i) {
+        Sg[Sg.GetRows()-1-i][Sg.GetRows()-1-i] = 0;
+    }
+    cout << "Eliminated " << vecs << " vectors\n";
+    cout << "Achieved compression ratio of " << calcCompressionRatio(Sg.GetRows(), vecs) << endl;
+    cout << " # Mults: " << calcNumMults(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
+    cout << " # Adds: " << calcNumAdds(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
 }
 
 Matrix<float> formMatrix(Vector<float> Sg) {
@@ -391,4 +479,5 @@ int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
     free((void*) rv1);
     return(1);
 }
+
 
