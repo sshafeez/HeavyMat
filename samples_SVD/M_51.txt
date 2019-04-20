@@ -1,0 +1,5 @@
+Savings: 52750
+Savings: 52750
+Savings: 58000
+Maximum error: 113
+Cumulative error: 48973
