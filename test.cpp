@@ -36,8 +36,7 @@ int main(int argc, char** argv) {
 	totalError += calcError(B,B_orig);
 	cout<<"total error: "<<totalError<<endl;
 
-	string file = argv[1];
-	file += "_"+to_string(atof(argv[2]));
+	string file = to_string(atof(argv[2]))+ ".png";
 	image_write(file.c_str(), R.grid, G.grid, B.grid);
 
 	
