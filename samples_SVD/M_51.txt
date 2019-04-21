@@ -1,5 +1,5 @@
-Savings: 52750
-Savings: 52750
-Savings: 58000
-Maximum error: 113
-Cumulative error: 48973
+Savings: 52750; maxErrorRows: 113; maxErrorCols: 112;
+Savings: 52750; maxErrorRows: 71; maxErrorCols: 71;
+Savings: 58000; maxErrorRows: 39; maxErrorCols: 39;
+Maximum error: 112;
+Cumulative error: 140599;
