@@ -1,0 +1,5 @@
+Savings: 28792; maxErrorRows: 109; maxErrorCols: 109;
+Savings: 30916; maxErrorRows: 107; maxErrorCols: 107;
+Savings: 37288; maxErrorRows: 128; maxErrorCols: 128;
+Maximum error: 128
+Cumulative error: 1693388
