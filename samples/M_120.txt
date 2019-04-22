@@ -1,0 +1,6 @@
+rowSavings: 62001 colSavings: 54564
+rowSavings: 57955 colSavings: 53425
+rowSavings: 62001 colSavings: 62001
+Max Error: 118.803
+
+total error: 2.50579e+06

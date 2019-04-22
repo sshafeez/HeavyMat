@@ -1,0 +1,5 @@
+rowSavings: 53689 colSavings: 52916
+rowSavings: 54068 colSavings: 53509
+rowSavings: 53929 colSavings: 52556
+Max Error: 149.919
+total error: 4.63894e+06
