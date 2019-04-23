@@ -11,6 +11,4 @@ A memory intensive matrix class with fast matrix multiplication
  * Get performance metrics on generated images with heavy mulitplication
  * Get performance metrics on generated images with naive
  
- Poster layout:
- https://www.makesigns.com/tutorials/poster-design-layout.aspx
  Images: Mlogo: https://etaluma.com/company/our-customers/umich-logo/; Others: https://www.pinterest.com/uofmichigan/tour-of-umich/ 
