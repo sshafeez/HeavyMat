@@ -4,6 +4,7 @@ A memory intensive matrix class with fast matrix multiplication
 ## Files
 Samples folder contains images with flexible basis technique applied at various maximum error levels <br />
 Samples_SVD folder contains image with SVD technique applied to save same # of mults as corresponding images in samples folder <br />
+SVD_Matrix.h, SVD_Matrix.cpp, SVD.h, SVD.cpp are adaptations of code originating online (source listed below) to do singular value decomposition on square matrices <br />
 
  
 All resources used:
