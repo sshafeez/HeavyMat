@@ -87,7 +87,7 @@ int calculateMaxError(Matrix<float> &first, Matrix<float> &second) {
     for (int i = 0; i < first.GetRows() * first.GetCols(); ++i) {
         if (abs(data1[i] - data2[i]) > max) {
             max = abs(data1[i] - data2[i]);
-            cout << data1[i] << " " << data2[i] << " " << abs(data1[i] - data2[i]) << "\n";
+            //cout << data1[i] << " " << data2[i] << " " << abs(data1[i] - data2[i]) << "\n";
         }
         //cout << data1[i] << " " << data2[i] << "\n";
     }
@@ -109,6 +109,18 @@ int multRatio(int sizeL, int colsR, double r) {
     double denom = 2*sizeL*colsR+sizeL;
     cout << "Multiplication ratio " << r << endl;
     return sizeL - int(num/denom);
+}
+
+// returns # vecs that should
+int numMultSavings(int rows, int cols, int savings) {
+    int naive = rows*rows*cols;
+    int svd = naive - savings;
+    int denom = rows+2*rows*cols;
+    double vec = (double)svd/denom;
+    cout << vec << " " << vec-(int)vec << endl;
+    if ((vec-(int)vec)>0.5) vec = (int)vec+1;
+    cout << vec << endl;
+    return (rows - int(vec));
 }
 
 double calcCompressionRatio(int rows, int vecs) {
@@ -137,21 +149,30 @@ void eliminateBasis(Matrix<float> &Sg, float error, int cols) {
         else {
             cout << "Eliminated " << vecs << " vectors\n";
             cout << "Achieved compression ratio of " << calcCompressionRatio(Sg.GetRows(), vecs) << endl;
-            cout << " # Mults: " << calcNumMults(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
-            cout << " # Adds: " << calcNumAdds(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
+            int mults = calcNumMults(Sg.GetRows(), Sg.GetRows()-vecs, cols);
+            int adds = calcNumAdds(Sg.GetRows(), Sg.GetRows()-vecs, cols);
+            int naive = Sg.GetRows()*Sg.GetRows()*cols;
+            cout << " # Mults: " << mults << endl;
+            cout << " # Adds: " << adds << endl;
+            cout << "Actual # mults saved: " << naive - mults << endl;
             break;
         }
     }
 }
 
+// # vecs to eliminate
 void eliminateBasis(Matrix<float> &Sg, int vecs, int cols) {
     for (int i = 0; i < vecs; ++i) {
         Sg[Sg.GetRows()-1-i][Sg.GetRows()-1-i] = 0;
     }
     cout << "Eliminated " << vecs << " vectors\n";
     cout << "Achieved compression ratio of " << calcCompressionRatio(Sg.GetRows(), vecs) << endl;
-    cout << " # Mults: " << calcNumMults(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
-    cout << " # Adds: " << calcNumAdds(Sg.GetRows(), Sg.GetRows()-vecs, cols) << endl;
+    int mults = calcNumMults(Sg.GetRows(), Sg.GetRows()-vecs, cols);
+    int adds = calcNumAdds(Sg.GetRows(), Sg.GetRows()-vecs, cols);
+    int naive = Sg.GetRows()*Sg.GetRows()*cols;
+    cout << " # Mults: " << mults << endl;
+    cout << " # Adds: " << adds << endl;
+    cout << "Actual # mults saved: " << naive - mults << endl;
 }
 
 void eliminateBasis(Matrix<float> &Sg, double ratio, int cols) {
@@ -188,7 +209,8 @@ Matrix<float> formMatrix(Vector<float> Sg) {
 
 Vector<float> SVD(Matrix<float> &a, Matrix<float> &b, Matrix<float> &c)
 {
-	Vector<float> w(a.GetRows());
+    if (a.IsInf()) { cout << "true\n"; }
+    Vector<float> w(a.GetRows());
 	Matrix<float> v(a.GetRows(),a.GetCols());
 	dsvd(a, a.GetRows(), a.GetCols(), w.GetRawData(), v);
     Vector<float> w1 = w;
@@ -213,6 +235,7 @@ static double PYTHAG(double a, double b)
 
 int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
 {
+    if (v.IsInf()) { cout << "isinf1\n"; }
     int flag, i, its, j, jj, k, l, nm;
     double c, f, h, s, x, y, z;
     double anorm = 0.0, g = 0.0, scale = 0.0;
@@ -300,6 +323,7 @@ int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
         }
         anorm = MAX(anorm, (fabs((double)w[i]) + fabs(rv1[i])));
     }
+    //if (v.IsInf()) { cout << "isinf2\n"; }
   
     /* accumulate the right-hand transformation */
     for (i = n - 1; i >= 0; i--) 
@@ -308,15 +332,20 @@ int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
         {
             if (g) 
             {
-                for (j = l; j < n; j++)
+                for (j = l; j < n; j++) {
+                    /*if (((double)a[i][l] == 0) || (isnan((double)a[i][l]))) { cout << "error1\n"; }*/
                     v[j][i] = (float)(((double)a[i][j] / (double)a[i][l]) / g);
+                    if (isnan(v[j][i])) { v[j][i] = 0; }
                     /* double division to avoid underflow */
+                }
                 for (j = l; j < n; j++) 
                 {
                     for (s = 0.0, k = l; k < n; k++) 
                         s += ((double)a[i][k] * (double)v[k][j]);
-                    for (k = l; k < n; k++) 
+                    for (k = l; k < n; k++) {
                         v[k][j] += (float)(s * (double)v[k][i]);
+                        if (isnan(v[k][j])) { v[k][j] = 0; }
+                    }
                 }
             }
             for (j = l; j < n; j++) 
@@ -326,6 +355,7 @@ int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
         g = rv1[i];
         l = i;
     }
+ //   if (v.IsInf()) { cout << "isinf2\n"; }
   
     /* accumulate the left-hand transformation */
     for (i = n - 1; i >= 0; i--) 
@@ -359,6 +389,7 @@ int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
         }
         ++a[i][i];
     }
+    //if (v.IsInf()) { cout << "isinf1\n"; }
 
     /* diagonalize the bidiagonal form */
     for (k = n - 1; k >= 0; k--) 
@@ -446,12 +477,16 @@ int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
                 g = g * c - x * s;
                 h = y * s;
                 y = y * c;
+                //if (v.IsInf()) { cout << "isinf4\n"; }
                 for (jj = 0; jj < n; jj++) 
                 {
                     x = (double)v[jj][j];
                     z = (double)v[jj][i];
                     v[jj][j] = (float)(x * c + z * s);
+                    if (isnan(v[jj][j])) { v[jj][j] = 0; }
                     v[jj][i] = (float)(z * c - x * s);
+                    if (isnan(v[jj][i])) { v[jj][i] = 0; }
+                    //if (v.IsInf()) { cout << "isinf5\n"; }
                 }
                 z = PYTHAG(f, h);
                 w[j] = (float)z;
@@ -476,8 +511,8 @@ int dsvd(Matrix<float> &a, int m, int n, float *w, Matrix<float> &v)
             w[k] = (float)x;
         }
     }
+   // if (a.IsInf()) { cout << "isinf2\n"; }
+    //if (v.IsInf()) { cout << "isinf3\n"; }
     free((void*) rv1);
     return(1);
 }
-
-
