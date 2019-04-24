@@ -1,14 +1,11 @@
 ## HEAVY MAT
 A memory intensive matrix class with fast matrix multiplication
-
-### Remaining Tasks
- * Get performance metrics on Strassen for various sizes of matrices
- * Get performance metrics on heavy multiplication for random data, normal data, M logo, and some other picture (maybe something michigan related like a picture of the union as that may be pretty symettrical)
- * Get performance metrics on naive multiplication for all the sizes gathered above, for comparison sake
- * Finish implementing heavy multiplication method 
- * Consider reworking algorithm to focus on producing fewest product linear combinations by more intelligently picking "basis" or somehow have a flexible basis
- * Generate some images with varying levels of error
- * Get performance metrics on generated images with heavy mulitplication
- * Get performance metrics on generated images with naive
  
- Images: Mlogo: https://etaluma.com/company/our-customers/umich-logo/; Others: https://www.pinterest.com/uofmichigan/tour-of-umich/ 
+All resources used:
+Strassen Multiplication Method: https://www.youtube.com/watch?v=1AIvlizGo7Y
+Strassen Multiplication: https://www.geeksforgeeks.org/strassens-matrix-multiplication/
+SVD code: http://svn.lirec.eu/libs/magicsquares/src/SVD.cpp
+Mlogo image: https://etaluma.com/company/our-customers/umich-logo/; 
+Other images: https://www.pinterest.com/uofmichigan/tour-of-umich/;
+
+
