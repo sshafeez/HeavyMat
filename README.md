@@ -11,7 +11,7 @@ stb_image.h and stb_image_write.h convert images into an array of bytes <br />
 image.h contains functions that turn image data (in form of array of bytes) into a 2D vector of double, or an array of floats, for both grayscale and RGB images, and vice versa <br />
 The remaining .cpp files contain tests for the .h files <br />
  
-All resources used:
+## All resources used
 Strassen Multiplication Method: https://www.youtube.com/watch?v=1AIvlizGo7Y <br />
 Strassen Multiplication: https://www.geeksforgeeks.org/strassens-matrix-multiplication/ <br />
 How to use SVD for image compression: http://andrew.gibiansky.com/blog/mathematics/cool-linear-algebra-singular-value-decomposition/ <br />
