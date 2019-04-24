@@ -14,6 +14,7 @@ The remaining .cpp files contain tests for the .h files <br />
 All resources used:
 Strassen Multiplication Method: https://www.youtube.com/watch?v=1AIvlizGo7Y <br />
 Strassen Multiplication: https://www.geeksforgeeks.org/strassens-matrix-multiplication/ <br />
+How to use SVD for image compression: http://andrew.gibiansky.com/blog/mathematics/cool-linear-algebra-singular-value-decomposition/ <br />
 SVD code: http://svn.lirec.eu/libs/magicsquares/src/SVD.cpp <br />
 Mlogo image: https://etaluma.com/company/our-customers/umich-logo/ <br />
 Other images: https://www.pinterest.com/uofmichigan/tour-of-umich/ <br />
