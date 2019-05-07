@@ -16,7 +16,6 @@ long int mults = 0;
 long int adds = 0;
 
 mutex printLock;
-enum print{res,perf,resPerf}; // call print() w/res for result matrix, perf for performance data, resPerf for both
 
 ///////////////////// NAIVE MATRIX //////////////////////////////
 
@@ -57,24 +56,6 @@ class matrix{
     //individual element access
     double& at(int row, int col){
         return grid[row][col];
-    }
-    
-    //print contents
-    void print(enum print pr){
-        if (pr == 0 || pr == 2) {
-            for(int i=0; i<grid.size(); ++i){
-                for(int j=0; j<grid[0].size(); ++j){
-                    cout<<grid[i][j]<<" ";
-                    //cout<<std::setprecision(2)<<std::fixed<<grid[i][j]<<" ";
-                }
-                cout<<endl;
-            }
-        }
-        if (pr == 1 || pr == 2) {
-            cout << "# Mults: " << mults << "; # Adds: " << adds;
-        }
-        cout<<endl;
-        mults = 0; adds = 0;
     }
 
     //get size in <rows,columns>
@@ -142,7 +123,6 @@ class matrix{
 		int cols = size().second;
 
 		for (int r = 0; r < rows; ++r) {
-			//if (rows == 5 && cols == 5) print();
 			if (lead >= cols) return;
 			int i = r;
 			//find the next pivot
@@ -371,7 +351,6 @@ class heavy_matrix : public matrix{
 				matrix b(0, 0); b.append(grid[i]);
 				matrix rem(0, 0); rem.append(grid[i]);
 				matrix proj(0, 0);
-				//cout << "b: \n"; b.print(res);
 				double cost = error +1;
 
 				//store computed Bmatrix
@@ -420,8 +399,6 @@ class heavy_matrix : public matrix{
 				}
 				
 				if (cost < error && weights.size() < b.size().first) {
-					//cout << "proj: \n"; proj.print(res);
-					//cout << "Adding dep size: " << weights.size() << endl;
 					if (passes == 0) rowDeps[i] = weights;
 					else colDeps[i] = weights;
 				}
