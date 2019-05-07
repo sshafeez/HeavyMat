@@ -57,6 +57,9 @@ class matrix{
     double& at(int row, int col){
         return grid[row][col];
     }
+	void set(int row, int col, double val){
+		grid[row][col]=val;
+	}
 
     //get size in <rows,columns>
     pair<int,int> size(){
@@ -200,6 +203,15 @@ class matrix{
         }
     }
 
+	void print(){
+		cout<<grid.size()<<" : "<<grid[0].size()<<endl;
+		for(vector<double>& row : grid){
+			for(double val : row){
+				cout<<val<<" ";			
+			}
+			cout<<endl;
+		}
+	}
 
 };
 
@@ -342,7 +354,7 @@ class heavy_matrix : public matrix{
 
 		for (int passes = 0; passes < 2; ++passes) {
 			for (int i = 1; i < size().first; ++i) {
-				printLock.lock(); cout <<"id: "<<this_thread::get_id()<< " pass: " <<passes<< " i: "<<i<<endl; printLock.unlock();
+				printLock.lock(); cout <<"pass: " <<passes<< " i: "<<i<<endl; printLock.unlock();
 				//empty basis
 				matrix A(0, 0);
 				vector<int> rowsInBasis;
