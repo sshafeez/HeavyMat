@@ -248,8 +248,8 @@ void multiply(matrix& left, matrix& right, matrix& dest){
         for(int j=0; j<cols; ++j){
             dest.at(i,j) = 0;
             for(int k=0; k<n; ++k){
-		mults++; adds++;
-		dest.at(i,j) += left.at(i,k) * right.at(k,j);
+				mults++; adds++;
+				dest.at(i,j) += left.at(i,k) * right.at(k,j);
             }
 	    adds--;
         }
@@ -345,6 +345,7 @@ class heavy_matrix : public matrix{
     
     
     heavy_matrix(int rows, int cols, bool initRandom = false): matrix(rows,cols,initRandom){}
+	heavy_matrix(const heavy_matrix& other): matrix(other) {}
 	heavy_matrix(vector<vector<double>>& data): matrix(data) {}
 
 	//find linear dependencies
@@ -481,7 +482,7 @@ class heavy_matrix : public matrix{
 
 };
 
-void multiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
+void fastMultiply(heavy_matrix& left, heavy_matrix& right, heavy_matrix& dest){
     if(left.size().second != right.size().first) throw "inner dimension mismatch";
 
     /// (mxn) * (nxq) = (mxq)
